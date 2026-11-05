@@ -1,0 +1,3 @@
+data/*.csv
+cmake-build-*/
+.idea/

@@ -11,35 +11,12 @@
 #ifndef PROPHIT_HASHTABLE_H
 #define PROPHIT_HASHTABLE_H
 
+#include "GameRow.h"
 #include <algorithm>
 #include <list>
 #include <string>
 #include <vector>
 using namespace std;
-
-// which stat a prop is about. The numbers match the menu in the wireframe/
-enum StatType { Pass_Yds = 1, Rush_Yds = 2, Rec_Yds = 3, Receptions = 4};
-
-struct GameRow {
-    std::string playerName;
-    std::string team;
-    std::string opponent;
-    int season = 0;
-    int week = 0;
-    bool isHome = false;
-    int passYds = 0;
-    int rushYds = 0;
-    int recYds = 0;
-    int receptions = 0;
-
-    int getStat(StatType stat) const {
-        if (stat == Pass_Yds) return passYds;
-        if (stat == Rush_Yds) return rushYds;
-        if (stat == Rec_Yds)  return recYds;
-        return receptions;
-    }
-};
-
 
 class HashTable {
 private:
@@ -53,22 +30,6 @@ private:
     int numPlayers;
     int numRows;
     double maxLoadFactor;
-
-// Makes the names match no matter how its typed (caps or extra spaces).
-    static string normalize(const string& name) {
-        int start = 0;
-        int end = (int)name.size() - 1;
-        while (start <= end && name[start] == ' ') start++;
-        while (end >= end && name[end] == ' ') end--;
-
-        string result = "";
-        for (int i = start; i <= end; i++) {
-            char c = name[i];
-            if (c >= 'A' && c <= 'Z') c = c - 'A' + 'a';
-            result += c;
-        }
-        return result;
-    }
 
 // Polynomial rolling hash: hash = (hash * 31 + c) % capacity
     int hash(const string& key) const {
@@ -115,7 +76,7 @@ public:
 
 //If the player is already in the table, add the game to their list. Otherwise make a new node for the player.
     void insert(const GameRow& row) {
-        string key = normalize(row.playerName);
+        string key = GameRow::normalize(row.playerName);
         int index = hash(key);
 
         // Walk the chain looking for this player
@@ -144,7 +105,7 @@ public:
 // Return a pointer to the player's games, or nullptr if not found. Also this makes sure we dont keep the
 // pointer after another insert.
     const vector<GameRow>* find(const string& playerName) const {
-        string key = normalize(playerName);
+        string key = GameRow::normalize(playerName);
         int index = hash(key);
 
         for (const Node& node : table[index]) {

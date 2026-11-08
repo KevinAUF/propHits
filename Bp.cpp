@@ -4,6 +4,7 @@
 #include "Bp.h"
 #include <algorithm>
 #include <iterator>
+using namespace std;
 
 Bplus::LeafNode* Bplus::find_leaf(const string& key, Path* path) {
     Node* node = root;

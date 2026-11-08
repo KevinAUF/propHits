@@ -53,7 +53,7 @@ private:
         }
         return (int)h;
     }
-// Returns -1 if the position isn't one of the positions listed.
+    // Returns -1 if the position isn't one of the positions listed.
     static int positionIndex(const string& pos) {
         if (pos == "QB") return 0;
         if (pos == "RB") return 1;
@@ -70,7 +70,16 @@ private:
         return nullptr;
     }
 
-// This is for the averages of every team's per game number for the position and stat.
+    // Read only version
+    const DefenseStats* findTeam(const string& team) const {
+        int index = hash(team);
+        for (const DefenseStats& d : table[index]) {
+            if (d.team == team) return &d;
+        }
+        return nullptr;
+    }
+
+    // This is for the averages of every team's per game number for the position and stat.
     double leagueAverage(int pos, int stat) const {
         double sum = 0.0;
         int teams = 0;
@@ -84,12 +93,57 @@ private:
     }
 
 public:
-// Pick the season you want matchups for.
-// Defenses change every year, so mixing prior seasons is meaningless.
+    // Pick the season you want matchups for.
+    // Defenses change every year, so mixing prior seasons is meaningless.
 
-    explicit 
+    explicit DefenseTable(int seasonToUse) : table(CAPACITY), season(seasonToUse) {}
 
+    // Credit one player's game to the defense he played against
+    void addRow(const GameRow& row) {
+        if (row.season != season) return;
+        int pos = positionIndex(row.position);
+        if (pos == -1 || row.opponent.empty()) return;
 
+        DefenseStats* d = findTeam(row.opponent);
+        if (d == nullptr) {
+            DefenseStats newTeam;
+            newTeam.team = row.opponent;
+
+            table[hash(row.opponent)].push_back(newTeam);
+            d = &table[hash(row.opponent)].back();
+        }
+        for (int s = 0; s < 4; s++) {
+            d->allowed[pos][s] += row.getStat((StatType)(s + 1));
+        }
+        d->gamesPlayed.insert(row.season * 100 + row.week);
+    }
+    double getDefenseFactor(const string& team, const string& position, StatType stat) const {
+        int pos = positionIndex(position);
+        if (pos == -1) return 1.0;
+
+        const DefenseStats* d = findTeam(team);
+        if (d == nullptr) return 1.0;
+
+        int s = (int)stat - 1;
+        double avg = leagueAverage(pos, s);
+        if (avg <= 0.0) return 1.0;
+
+        return d->perGame(pos, s) / avg;
+    }
+
+// This functions is useful for printing "DAL allows 182 rec yds/game to WRs"
+    double allowedPerGame(const string& team, const string& position, StatType stat) const {
+        int pos = positionIndex(position);
+        const DefenseStats* d = findTeam(team);
+        if (pos == -1 || d == nullptr) return 0.0;
+        return d->perGame(pos, (int)stat - 1);
+    }
+
+    int teamCount() const {
+        int count = 0;
+        for (int i = 0; i < CAPACITY; i++) count += (int)table[i].size();
+        return count;
+    }
 
 };
 

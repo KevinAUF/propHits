@@ -3,7 +3,10 @@
 //
 #include <iostream>
 #include "HashTable.h"
+#include "PropModel.h"
+    using namespace std;
 
-int main() {
-    return 0;
-}
+    int main() {
+        cout << "hello world" << endl;
+        return 0;
+    }

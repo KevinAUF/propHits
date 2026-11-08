@@ -7,4 +7,5 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_executable(prop_analyzer main.cpp HashTable.h
         main.cpp
         HashTable.h
-        DefenseTable.h)
+        DefenseTable.h
+        PropModel.h)

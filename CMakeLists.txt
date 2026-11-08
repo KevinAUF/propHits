@@ -4,4 +4,5 @@ project(PropHits)
 set(CMAKE_CXX_STANDARD 20)
 
 add_executable(PropHits main.cpp
-        Bp.h)
+        Bp.h
+        Bp.cpp)

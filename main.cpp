@@ -1,26 +1,43 @@
 #include <iostream>
-#include <fstream>
 #include <string>
+#include <vector>
 #include "GameRow.h"
+#include "DataLoader.h"
+
+using namespace std;
 
 int main() {
-    std::ifstream file("../data/player_stats.csv");
+    vector<string> statFiles = {
+        "../data/player_stats.csv",            // 1999-2024
+        "../data/stats_player_week_2025.csv",
+        "../data/stats_player_week_2026.csv"
+    };
+    DataLoader loader;
+    vector<GameRow> rows = loader.loadPlayerStats(statFiles, "../data/games.csv");
 
-    if (!file.is_open()) {
-        std::cerr << "Could not open ../data/player_stats.csv" << std::endl;
+    if (rows.empty()) {
+        cerr << "No rows loaded." << endl;
         return 1;
     }
+    cout << "Loaded " << rows.size() << " rows" << endl;
 
-    std::string line;
-
-    std::getline(file, line);
-    std::cout << line << std::endl;
-
-    int count = 0;
-    while (std::getline(file, line)) {
-        count++;
+    // Test: find Justin Jefferson's games
+    string target = GameRow::normalize("justin jefferson");
+    vector<GameRow> games;
+    for (const GameRow& row : rows) {
+        if (GameRow::normalize(row.playerName) == target) games.push_back(row);
     }
 
-    std::cout << "Rows: " << count << std::endl;
+    // Print his last 5 games
+    cout << "\nJustin Jefferson: " << games.size() << " games found. Last 5:" << endl;
+    int first = (int)games.size() - 5;
+    if (first < 0) first = 0;
+    for (int i = first; i < (int)games.size(); i++) {
+        const GameRow& g = games[i];
+        cout << g.season << " wk " << g.week << "  "
+             << (g.isHome ? "vs " : "@  ") << g.opponent
+             << "  rec: " << g.receptions
+             << "  rec yds: " << g.recYds << endl;
+    }
     return 0;
 }

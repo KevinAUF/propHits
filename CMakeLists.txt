@@ -3,4 +3,4 @@ project(propHits)
 
 set(CMAKE_CXX_STANDARD 17)
 
-add_executable(propHits main.cpp)
+add_executable(propHits main.cpp DataLoader.cpp)

@@ -5,7 +5,7 @@
 #include <algorithm>
 #include <iterator>
 using namespace std;
-
+//Traverses the tree down to the leaf with the given key, and tracks path taken to make spliting nodes easier later on
 Bplus::LeafNode* Bplus::find_leaf(const string& key, Path* path) {
     Node* node = root;
     while (!node->leaf) {
@@ -18,7 +18,7 @@ Bplus::LeafNode* Bplus::find_leaf(const string& key, Path* path) {
     }
     return static_cast<LeafNode*>(node);
 }
-
+//When a node needs to be split, inserts into the right spot of the parent node and then splits that node as well if needed
 void Bplus::insert_to_parent(Node* left, const string& key, Node* right, Path& path) {
     if (path.empty()) {
         auto* new_root = new InternalNode();
@@ -36,7 +36,7 @@ void Bplus::insert_to_parent(Node* left, const string& key, Node* right, Path& p
         split_internal(parent, path);
     }
 }
-
+//splits leaf in half, copies the first key from the right half up into parent and links the two halves of the leaf together
 void Bplus::split_leaf(LeafNode* leaf, Path& path) {
     auto* right = new LeafNode();
     std::size_t mid = leaf->keys.size() / 2;
@@ -58,7 +58,7 @@ void Bplus::split_leaf(LeafNode* leaf, Path& path) {
 
     insert_to_parent(leaf, right->keys.front(), right, path);
 }
-
+//splits internal node, inserts middle key up into parent and removes it from old internal node
 void Bplus::split_internal(InternalNode* node, Path& path) {
     auto* right = new InternalNode();
     size_t mid = node->keys.size() / 2;
@@ -69,6 +69,7 @@ void Bplus::split_internal(InternalNode* node, Path& path) {
     node->children.erase(node->children.begin() + mid + 1, node->children.end());
     insert_to_parent(node, up, right, path);
 }
+//returns a pointer to the provided players game history
 const Bplus::Rows* Bplus::search(const string& key) {
     LeafNode* leaf = find_leaf(key);
     auto it = lower_bound(leaf->keys.begin(), leaf->keys.end(), key);
@@ -77,8 +78,8 @@ const Bplus::Rows* Bplus::search(const string& key) {
     }
     return &leaf->values[it - leaf->keys.begin()];
 }
-
-void Bplus::insertNode(const string& key, const GameRow& row) {
+//Adds a game to a player's history
+void Bplus::insert(const string& key, const GameRow& row) {
     Path path;
     LeafNode* leaf = find_leaf(key, &path);
     size_t i = lower_bound(leaf->keys.begin(), leaf->keys.end(), key) - leaf->keys.begin();
@@ -92,7 +93,7 @@ void Bplus::insertNode(const string& key, const GameRow& row) {
         split_leaf(leaf, path);
     }
 }
-
+//Returns every player within the given range, sorted
 vector<pair<string, const Bplus::Rows*>> Bplus::range_search(const string& low, const string& high) {
     vector<pair<string, const Rows*>> out;
     LeafNode* leaf = find_leaf(low);

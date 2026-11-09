@@ -1,3 +1,4 @@
-cmake-build-*/
-.idea/
-*.exe
+   data/*.csv
+   cmake-build-*/
+   .idea/
+   *.exe

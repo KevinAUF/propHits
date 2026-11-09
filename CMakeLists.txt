@@ -4,4 +4,4 @@ project(propHits)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(propHits main.cpp DataLoader.cpp)
+add_executable(propHits main.cpp DataLoader.cpp Bp.cpp)
